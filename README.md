@@ -47,21 +47,52 @@ http://127.0.0.1:5000
 ```
 
 ## 主な機能
-- 従業員ログイン
-![従業員のログイン](images/従業員ログイン.png)
-- 正社員用の勤怠登録（出勤、退勤）
-![正社員用の勤怠登録](images/正社員用の勤怠登録.png)
-- パート用の勤怠登録（出勤、退勤、外出、戻り）
-![パート用のログイン](images/パート用のログイン.png)
-- 管理者ログイン
-![管理者ログイン](images/管理者ログイン.png)
-- 管理者画面
-![管理者画面](images/管理者画面.png)
-- アカウント追加
-![アカウント追加](images/アカウント追加.png)
-- 勤怠履歴（表示とPDFダウンロード）
-![勤怠履歴](images/勤怠履歴.png)
-月次集計表（表示とExcelダウンロード）
-![月次集計表](images/月次集計表.png)
-- アカウント管理（追加、削除）
-![アカウント管理](images/アカウント管理.png)
+
+### 従業員向け機能
+
+#### ログイン画面
+<img src="images/従業員ログイン.png" alt="従業員のログイン" width="300">
+
+#### 勤怠登録
+<table>
+<tr>
+<td><strong>正社員用</strong><br>出勤・退勤の登録</td>
+<td><strong>パート用</strong><br>出勤・退勤・外出・戻りの登録</td>
+</tr>
+<tr>
+<td><img src="images/正社員用の勤怠登録.png" alt="正社員用の勤怠登録" width="300"></td>
+<td><img src="images/パート用の勤怠登録.png" alt="パート用の勤怠登録" width="300"></td>
+</tr>
+</table>
+
+### 管理者向け機能
+
+#### ログイン画面
+<img src="images/管理者ログイン.png" alt="管理者ログイン" width="300">
+
+#### 管理者画面
+<img src="images/管理者画面.png" alt="管理者画面" width="300">
+
+#### アカウント管理
+<table>
+<tr>
+<td><strong>アカウント追加</strong></td>
+<td><strong>アカウント管理</strong></td>
+</tr>
+<tr>
+<td><img src="images/アカウント追加.png" alt="アカウント追加" width="300"></td>
+<td><img src="images/アカウント管理.png" alt="アカウント管理" width="300"></td>
+</tr>
+</table>
+
+#### レポート機能
+<table>
+<tr>
+<td><strong>勤怠履歴</strong><br>表示とPDFダウンロード</td>
+<td><strong>月次集計表</strong><br>表示とExcelダウンロード</td>
+</tr>
+<tr>
+<td><img src="images/勤怠履歴.png" alt="勤怠履歴" width="300"></td>
+<td><img src="images/月次集計表.png" alt="月次集計表" width="300"></td>
+</tr>
+</table>
