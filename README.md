@@ -26,8 +26,8 @@ flask db upgrade
 ```
 
 2. 管理者アカウントの設定
-環境変数で管理者ID(your_admin_id)とパスワード(your_admin_password)を設定します：
-（初期設定は、管理者ID：suzuki、パスワード：kamkam6としている）
+必要であれば、環境変数で管理者ID(your_admin_id)とパスワード(your_admin_password)を設定します：
+（初期設定は、管理者ID：id00、パスワード：pass00としている）
 ```bash
 export ADMIN_ID=your_admin_id
 export ADMIN_PASSWORD=your_admin_password
