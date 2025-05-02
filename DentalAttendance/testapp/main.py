@@ -394,6 +394,7 @@ def download_pdf(year, month):
                         cell_data.append(arrive)
                     if leave:
                         cell_data.append(leave)
+                    row.append('\n'.join(cell_data) if cell_data else '')
                 else:
                     # PTの場合は出勤、外出、戻り、退勤を縦に表示
                     arrive = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '出勤'), '')
@@ -405,8 +406,7 @@ def download_pdf(year, month):
                     cell_data.append(out)  # 外出の記録がない場合は空文字列が追加される
                     cell_data.append(back)  # 戻りの記録がない場合は空文字列が追加される
                     cell_data.append(leave)
-                
-                row.append('\n'.join(cell_data) if cell_data else '')
+                    row.append('\n'.join(cell_data) if cell_data else '')
             
             current_date += timedelta(days=1)
         data.append(row)
