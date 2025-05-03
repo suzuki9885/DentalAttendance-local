@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         while (current <= endDate) {
             dates.push({
                 date: current.getDate(),
-                day: ['日', '月', '火', '水', '木', '金', '土'][current.getDay()]
+                day: ['月', '火', '水', '木', '金', '土', '日'][current.getDay()]
             });
             current.setDate(current.getDate() + 1);
         }

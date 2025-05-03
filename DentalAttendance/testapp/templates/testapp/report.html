@@ -39,6 +39,7 @@
                         <th>年</th>
                         <th>月</th>
                         <th>日</th>
+                        <th>曜日</th>
                         <th>出勤時間</th>
                         <th>退勤時間</th>
                     </tr>
@@ -49,7 +50,7 @@
                     {% for record in report_data %}
                     {% if record.employee_id != current_employee.id and current_employee.id != '' %}
                     <tr>
-                        <td colspan="7"></td>
+                        <td colspan="8"></td>
                     </tr>
                     {% endif %}
                     <tr>
@@ -58,6 +59,7 @@
                         <td>{{ record.year }}</td>
                         <td>{{ record.month }}</td>
                         <td>{{ record.day }}</td>
+                        <td>{{ record.day_of_week }}</td>
                         <td>{{ record.arrive }}</td>
                         <td>{{ record.leave }}</td>
                     </tr>

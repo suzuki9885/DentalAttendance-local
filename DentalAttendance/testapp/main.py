@@ -203,7 +203,7 @@ def attendance_history(year=None, month=None):
     while current_date <= end_date:
         dates.append({
             'date': current_date.day,
-            'day': ['日', '月', '火', '水', '木', '金', '土'][current_date.weekday()]
+            'day': ['月', '火', '水', '木', '金', '土', '日'][current_date.weekday()]
         })
         current_date += timedelta(days=1)
     
@@ -448,6 +448,30 @@ def download_pdf(year, month):
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
     ]))
 
+    # 出勤または退勤の記録がないセルを赤字に設定
+    for i, employee in enumerate(employees, 1):
+        current_date = start_date
+        col = 1  # 列インデックス（0から始まる）
+        while current_date <= end_date:
+            date_str = current_date.strftime('%Y-%m-%d')
+            records = AttendanceRecord.query.filter_by(
+                user_id=employee.id,
+                date=date_str
+            ).order_by(AttendanceRecord.time).all()
+            
+            if records:
+                arrive = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '出勤'), '')
+                leave = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '退勤'), '')
+                
+                # 出勤または退勤の記録がない場合、そのセルを赤字に設定
+                if (arrive and not leave) or (not arrive and leave):
+                    table.setStyle(TableStyle([
+                        ('TEXTCOLOR', (col, i), (col, i), colors.red)
+                    ]))
+            
+            col += 1
+            current_date += timedelta(days=1)
+
     elements.append(table)
     
     # PDFの生成
@@ -519,6 +543,7 @@ def report(year=None, month=None):
                 'year': current_date.year,
                 'month': current_date.month,
                 'day': current_date.day,
+                'day_of_week': ['月', '火', '水', '木', '金', '土', '日'][current_date.weekday()],
                 'arrive': arrive,
                 'leave': leave
             })
@@ -822,7 +847,7 @@ def download_csv(year, month):
     )
     
     # ヘッダー行
-    headers = ['従業員番号', '従業員名', '年', '月', '日', '出勤時間', '退勤時間']
+    headers = ['従業員番号', '従業員名', '年', '月', '日', '曜日', '出勤時間', '退勤時間']
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
         cell.font = header_font
@@ -858,11 +883,12 @@ def download_csv(year, month):
             ws.cell(row=row_num, column=3, value=current_date.year)
             ws.cell(row=row_num, column=4, value=current_date.month)
             ws.cell(row=row_num, column=5, value=current_date.day)
-            ws.cell(row=row_num, column=6, value=arrive)
-            ws.cell(row=row_num, column=7, value=leave)
+            ws.cell(row=row_num, column=6, value=['月', '火', '水', '木', '金', '土', '日'][current_date.weekday()])
+            ws.cell(row=row_num, column=7, value=arrive)
+            ws.cell(row=row_num, column=8, value=leave)
             
             # セルのスタイル設定
-            for col in range(1, 8):
+            for col in range(1, 9):
                 cell = ws.cell(row=row_num, column=col)
                 cell.alignment = center_alignment
                 cell.border = thin_border
@@ -879,8 +905,9 @@ def download_csv(year, month):
     ws.column_dimensions['C'].width = 10  # 年度
     ws.column_dimensions['D'].width = 10  # 月
     ws.column_dimensions['E'].width = 10  # 日
-    ws.column_dimensions['F'].width = 15  # 出勤時間
-    ws.column_dimensions['G'].width = 15  # 退勤時間
+    ws.column_dimensions['F'].width = 10  # 曜日
+    ws.column_dimensions['G'].width = 15  # 出勤時間
+    ws.column_dimensions['H'].width = 15  # 退勤時間
     
     # Excelファイルをレスポンスとして返す
     output = BytesIO()
