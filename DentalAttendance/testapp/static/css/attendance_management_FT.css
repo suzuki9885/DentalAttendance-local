@@ -187,8 +187,10 @@ body {
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     transition: right 0.3s ease-in-out;
     border-radius: 10px 0 0 10px;
-    padding: 20px;
+    padding: 60px 20px 24px;
     z-index: 1000;
+    display: flex;
+    flex-direction: column;
 }
 
 .navigation-menu.active {
@@ -199,6 +201,9 @@ body {
     list-style: none;
     padding: 0;
     margin-top: 20px;
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
 }
 
 .navigation-menu li {
@@ -239,9 +244,34 @@ body {
     font-size: 1.5em;
     font-weight: 700;
     color: #333;
-    margin: 35px 0 15px 10px;
+    margin: 0 0 15px 10px;
     padding-bottom: 10px;
     border-bottom: 2px solid #48b1e9;
+}
+
+.navigation-footer {
+    margin-top: auto;
+}
+
+.miss-report-button {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 2px solid #48b1e9;
+    background-color: white;
+    color: #48b1e9;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Noto Sans JP', sans-serif;
+    box-shadow: 0 4px 10px rgba(72, 177, 233, 0.2);
+    transition: all 0.3s ease;
+}
+
+.miss-report-button:hover {
+    background-color: #48b1e9;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(72, 177, 233, 0.35);
 }
 
 /* モーダルスタイル */
@@ -376,5 +406,309 @@ body {
     margin: 0;
     margin-bottom: 10px;
     margin-top: 17px;
+}
+
+/* 打刻ミス報告モーダル */
+.miss-report-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 20px;
+}
+
+.miss-report-modal.active {
+    display: flex;
+}
+
+.miss-report-content {
+    position: relative;
+    background-color: white;
+    border-radius: 16px;
+    padding: 28px 32px 36px;
+    width: 460px;
+    box-shadow: 0 18px 40px rgba(12, 121, 191, 0.25);
+    text-align: center;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.miss-report-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    font-size: 1.3em;
+    color: #000;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.miss-report-close i {
+    font-size: 1.5em;
+}
+
+.miss-report-close:hover {
+    color: #6c757d;
+    transform: scale(1.1);
+}
+
+.miss-report-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 8px;
+}
+
+.miss-report-separator {
+    width: calc(100% - 1px);
+    height: 2px;
+    margin: 8px 0 22px;
+    background: #48b1e9;
+    border-radius: 999px;
+}
+
+.miss-report-date {
+    font-size: 1.1rem;
+    color: #495057;
+    margin-bottom: 20px;
+}
+
+.miss-report-field {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+
+.miss-report-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 350;
+    color: #000;
+    margin-bottom: 8px;
+}
+
+.miss-report-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.miss-report-select {
+    width: 100%;
+    height: 50px;
+    padding: 8px 42px 8px 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    border: 2px solid #d0d5dd;
+    border-radius: 10px;
+    color: #000;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 600;
+    background-color: #ffffff;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    text-align: center;
+    text-align-last: center;
+}
+
+.miss-report-select:focus {
+    border: 2px solid #48b1e9;
+    box-shadow: 0 0 0 3px rgba(72, 177, 233, 0.15);
+}
+
+.miss-report-select:required:invalid {
+    color: #6c757d;
+}
+
+.miss-report-select option[value=""][disabled] {
+    color: #6c757d;
+}
+
+.miss-report-select option:not([value=""][disabled]) {
+    color: #000;
+    text-align: center;
+    font-weight: 600;
+}
+
+.miss-report-select-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8b949e;
+    pointer-events: none;
+    font-size: 0.9rem;
+}
+
+.miss-report-time-picker {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 14px;
+    height: 180px;
+    margin-top: 10px;
+}
+
+.miss-report-time-picker::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0) 18%, rgba(255,255,255,0) 82%, rgba(255,255,255,0.85));
+    pointer-events: none;
+    border-radius: 16px;
+}
+
+.miss-report-time-picker::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 44px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+.time-wheel {
+    position: relative;
+    flex: 0 0 110px;
+    height: 100%;
+    overflow-y: scroll;
+    padding: 68px 0;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.time-wheel::-webkit-scrollbar {
+    display: none;
+}
+
+.time-wheel-items {
+    display: flex;
+    flex-direction: column;
+}
+
+.time-wheel-item {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #a0a7b3;
+    font-weight: 600;
+    scroll-snap-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.time-wheel-item.active {
+    color: #000;
+    font-weight: 600;
+}
+
+.time-wheel-separator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #000;
+    pointer-events: none;
+    top: -1px;
+}
+
+.miss-report-input {
+    width: 100%;
+    height: 50px;
+    padding: 12px 14px;
+    border: 2px solid #d0d5dd;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    color: #000;
+    font-weight: 450;
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: #ffffff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.miss-report-input:focus {
+    border: 2px solid #48b1e9;
+    box-shadow: 0 0 0 3px rgba(72, 177, 233, 0.15);
+}
+
+.miss-report-input {
+    text-align: center;
+    letter-spacing: 0.05em;
+}
+
+.miss-report-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+.miss-report-input::-moz-focus-inner {
+    border: 0;
+}
+
+.miss-report-submit {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px 0;
+    border-radius: 12px;
+    border: 2px solid #48b1e9;
+    background-color: white;
+    color: #48b1e9;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 14px rgba(72, 177, 233, 0.2);
+}
+
+.miss-report-submit:hover {
+    background-color: #48b1e9;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(72, 177, 233, 0.35);
+}
+
+.miss-report-feedback {
+    min-height: 1.2em;
+    margin: 8px 0 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.miss-report-feedback.success {
+    color: #2fb380;
+}
+
+.miss-report-feedback.error {
+    color: #dc3545;
 }
 

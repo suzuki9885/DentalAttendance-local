@@ -141,3 +141,211 @@ function fetchRecords() {
             recordsList.innerHTML = '<li>記録の取得に失敗しました</li>';
         });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const missReportButton = document.querySelector('.miss-report-button');
+    const missReportModal = document.getElementById('missReportModal');
+    if (!missReportButton || !missReportModal) {
+        return;
+    }
+
+    const missReportClose = document.getElementById('missReportClose');
+    const missReportForm = document.getElementById('missReportForm');
+    const missReportFeedback = document.getElementById('missReportFeedback');
+    const missReportDateDisplay = document.getElementById('missReportDisplayDate');
+    const missReportDateInput = document.getElementById('missReportDateInput');
+    const missReportTime = document.getElementById('missReportTime');
+    const missReportType = document.getElementById('missReportType');
+    const missReportReason = document.getElementById('missReportReason');
+    if (missReportReason) {
+        missReportReason.addEventListener('change', () => {
+            const selected = missReportReason.options[missReportReason.selectedIndex];
+            if (selected && selected.value) {
+                selected.textContent = selected.value;
+            }
+        });
+    }
+    const timePickerContainer = document.getElementById('missReportTimePicker');
+    const hourWheel = timePickerContainer ? timePickerContainer.querySelector('.time-wheel[data-type="hour"]') : null;
+    const minuteWheel = timePickerContainer ? timePickerContainer.querySelector('.time-wheel[data-type="minute"]') : null;
+    const weekLabels = ['日', '月', '火', '水', '木', '金', '土'];
+
+    const pad = (value) => value.toString().padStart(2, '0');
+
+    const TIME_ITEM_HEIGHT = 44;
+    let wheelsInitialized = false;
+
+    const updateHiddenTimeValue = () => {
+        if (!hourWheel || !minuteWheel) {
+            return;
+        }
+        const hour = hourWheel.dataset.value || '00';
+        const minute = minuteWheel.dataset.value || '00';
+        missReportTime.value = `${hour}:${minute}`;
+    };
+
+    const setWheelSelection = (wheel, index) => {
+        const items = wheel.querySelectorAll('.time-wheel-item');
+        items.forEach((item, idx) => {
+            const isActive = idx === index;
+            item.classList.toggle('active', isActive);
+            if (isActive) {
+                wheel.dataset.value = item.dataset.value;
+            }
+        });
+    };
+
+    const snapToIndex = (wheel, limit, index, animate = false) => {
+        const boundedIndex = Math.max(0, Math.min(limit - 1, index));
+        const top = boundedIndex * TIME_ITEM_HEIGHT;
+        if (animate) {
+            wheel.scrollTo({ top, behavior: 'smooth' });
+        } else {
+            wheel.scrollTop = top;
+        }
+        setWheelSelection(wheel, boundedIndex);
+        updateHiddenTimeValue();
+    };
+
+    const indexFromScroll = (wheel) => Math.round(wheel.scrollTop / TIME_ITEM_HEIGHT);
+
+    const attachWheelEvents = (wheel, limit) => {
+        const handleScrollEnd = () => {
+            snapToIndex(wheel, limit, indexFromScroll(wheel), true);
+        };
+
+        let scrollTimeout = null;
+        wheel.addEventListener('scroll', () => {
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            scrollTimeout = setTimeout(handleScrollEnd, 80);
+        });
+
+        ['touchend', 'mouseup', 'mouseleave'].forEach(evt => {
+            wheel.addEventListener(evt, handleScrollEnd);
+        });
+
+        wheel.addEventListener('click', (event) => {
+            const item = event.target.closest('.time-wheel-item');
+            if (!item) return;
+            const idx = Number(item.dataset.index);
+            snapToIndex(wheel, limit, idx, true);
+        });
+    };
+
+    const buildWheel = (wheel, limit) => {
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'time-wheel-items';
+        for (let i = 0; i < limit; i += 1) {
+            const item = document.createElement('div');
+            item.className = 'time-wheel-item';
+            item.dataset.index = String(i);
+            item.dataset.value = pad(i);
+            item.textContent = pad(i);
+            itemsContainer.appendChild(item);
+        }
+        wheel.appendChild(itemsContainer);
+        wheel.dataset.value = '00';
+    };
+
+    const getIndexForValue = (wheel, value) => {
+        const items = wheel.querySelectorAll('.time-wheel-item');
+        const index = Array.from(items).findIndex(item => item.dataset.value === value);
+        return index >= 0 ? index : 0;
+    };
+
+    const setWheelPosition = (hourValue, minuteValue, animate = false) => {
+        if (!wheelsInitialized) return;
+        snapToIndex(hourWheel, 24, getIndexForValue(hourWheel, hourValue), animate);
+        snapToIndex(minuteWheel, 60, getIndexForValue(minuteWheel, minuteValue), animate);
+    };
+
+    const initializeTimePicker = () => {
+        if (!timePickerContainer || !hourWheel || !minuteWheel || wheelsInitialized) {
+            return;
+        }
+
+        buildWheel(hourWheel, 24);
+        buildWheel(minuteWheel, 60);
+        attachWheelEvents(hourWheel, 24);
+        attachWheelEvents(minuteWheel, 60);
+        setWheelSelection(hourWheel, 0);
+        setWheelSelection(minuteWheel, 0);
+        updateHiddenTimeValue();
+        wheelsInitialized = true;
+    };
+
+    const updateModalDateTime = () => {
+        const now = new Date();
+        missReportDateDisplay.textContent = `日時：${now.getFullYear()}年${pad(now.getMonth() + 1)}月${pad(now.getDate())}日(${weekLabels[now.getDay()]})`;
+        missReportDateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+        initializeTimePicker();
+        setWheelPosition('00', '00', false);
+        updateHiddenTimeValue();
+    };
+
+    const resetFeedback = () => {
+        missReportFeedback.textContent = '';
+        missReportFeedback.classList.remove('error', 'success');
+    };
+
+    const openMissReportModal = () => {
+        missReportForm.reset();
+        resetFeedback();
+        updateModalDateTime();
+        missReportModal.classList.add('active');
+    };
+
+    const closeMissReportModal = () => {
+        missReportModal.classList.remove('active');
+        missReportForm.reset();
+        setWheelPosition('00', '00', false);
+        updateHiddenTimeValue();
+    };
+
+    missReportButton.addEventListener('click', openMissReportModal);
+    missReportClose.addEventListener('click', closeMissReportModal);
+    missReportForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        resetFeedback();
+
+        if (!missReportType.value) {
+            missReportFeedback.textContent = '打刻種別を選択してください。';
+            missReportFeedback.classList.add('error');
+            return;
+        }
+
+        if (!missReportReason.value) {
+            missReportFeedback.textContent = '理由を選択してください。';
+            missReportFeedback.classList.add('error');
+            return;
+        }
+
+        const formData = new FormData(missReportForm);
+        missReportFeedback.textContent = '送信中...';
+
+        fetch('/miss_punch_report', {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    missReportFeedback.textContent = '報告が送信されました。';
+                    missReportFeedback.classList.add('success');
+                    setTimeout(() => {
+                        closeMissReportModal();
+                    }, 1200);
+                } else {
+                    missReportFeedback.textContent = data.message || '報告に失敗しました。';
+                    missReportFeedback.classList.add('error');
+                }
+            })
+            .catch(() => {
+                missReportFeedback.textContent = '通信エラーが発生しました。';
+                missReportFeedback.classList.add('error');
+            });
+    });
+
+});

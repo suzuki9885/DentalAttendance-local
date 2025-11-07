@@ -25,3 +25,17 @@ class AttendanceRecord(db.Model):
 
     def __repr__(self):
         return f'<AttendanceRecord {self.action_type} {self.date} {self.time}>' 
+
+
+class MissPunchReport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    report_date = db.Column(db.Date, nullable=False)
+    report_time = db.Column(db.Time, nullable=False)
+    action_type = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    user = db.relationship('User', backref=db.backref('miss_punch_reports', lazy=True))
+
+    def __repr__(self):
+        return f'<MissPunchReport {self.action_type} {self.report_date} {self.report_time}>'

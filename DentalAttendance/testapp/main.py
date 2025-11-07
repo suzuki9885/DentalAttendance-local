@@ -15,10 +15,11 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfbase import pdfmetrics
 import csv
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from testapp.config import ADMIN_ID, ADMIN_PASSWORD
+from sqlalchemy.exc import IntegrityError
 
-from testapp.models import AttendanceRecord, User
+from testapp.models import AttendanceRecord, User, MissPunchReport
 
 #先頭URLにリクエストが来るとemployee_login.htmlを表示
 @app.route('/')
@@ -486,90 +487,6 @@ def download_pdf(year, month):
         mimetype='application/pdf'
     )
 
-# 月次集計表画面
-@app.route('/report')
-@app.route('/report/<int:year>/<int:month>')
-def report(year=None, month=None):
-    # パラメータが指定されていない場合は現在の日付を使用
-    if year is None or month is None:
-        now = datetime.now()
-        # 21日以降は翌月を表示
-        if now.day >= 21:
-            if now.month == 12:
-                year = now.year + 1
-                month = 1
-            else:
-                year = now.year
-                month = now.month + 1
-        else:
-            year = now.year
-            month = now.month
-
-    # 前月の21日から当月の20日までの日付範囲を取得
-    if month == 1:
-        start_date = datetime(year - 1, 12, 21)
-    else:
-        start_date = datetime(year, month - 1, 21)
-    end_date = datetime(year, month, 20)
-    
-    # 全従業員を取得（雇用形態と従業員IDでソート）
-    employees = User.query.order_by(
-        case(
-            (User.employment_type == 'FT', 0),
-            (User.employment_type == 'PT', 1),
-        ),
-        User.employee_id
-    ).all()
-    
-    # 従業員の勤怠データを取得
-    report_data = []
-    for employee in employees:
-        current_date = start_date
-        while current_date <= end_date:
-            date_str = current_date.strftime('%Y-%m-%d')
-            records = AttendanceRecord.query.filter_by(
-                user_id=employee.id,
-                date=date_str
-            ).order_by(AttendanceRecord.time).all()
-            
-            # 勤怠情報の取得
-            arrive = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '出勤'), '')
-            leave = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '退勤'), '')
-            
-            # 勤怠情報の有無に関わらずデータを追加
-            report_data.append({
-                'employee_id': employee.employee_id,
-                'name': employee.name,
-                'year': current_date.year,
-                'month': current_date.month,
-                'day': current_date.day,
-                'day_of_week': ['月', '火', '水', '木', '金', '土', '日'][current_date.weekday()],
-                'arrive': arrive,
-                'leave': leave
-            })
-            
-            current_date += timedelta(days=1)
-    
-    return render_template('testapp/report.html', 
-                         year=year, 
-                         month=month,
-                         report_data=report_data)
-
-@app.route('/prev_month_report/<int:year>/<int:month>')
-def prev_month_report(year, month):
-    if month == 1:
-        return redirect(url_for('report', year=year-1, month=12))
-    else:
-        return redirect(url_for('report', year=year, month=month-1))
-
-# 翌月の月次集計表画面
-@app.route('/next_month_report/<int:year>/<int:month>')
-def next_month_report(year, month):
-    if month == 12:
-        return redirect(url_for('report', year=year+1, month=1))
-    else:
-        return redirect(url_for('report', year=year, month=month+1))
-
 # 従業員IDとパスワードのチェック
 @app.route('/check_employee_id', methods=['POST'])
 def check_employee_id():
@@ -714,6 +631,52 @@ def get_todays_records():
         'time': record.time.strftime('%H:%M')
     } for record in records])
 
+
+@app.route('/miss_punch_report', methods=['POST'])
+def miss_punch_report():
+    if 'user_id' not in session:
+        return jsonify({'status': 'error', 'message': 'ログインが必要です。'}), 401
+
+    user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({'status': 'error', 'message': 'ユーザー情報が取得できませんでした。'}), 404
+
+    action_type = request.form.get('action_type')
+    report_time = request.form.get('report_time')
+    report_date = request.form.get('report_date')
+
+    if not all([action_type, report_time, report_date]):
+        return jsonify({'status': 'error', 'message': '必要な情報が不足しています。'}), 400
+
+    allowed_types = ['出勤', '退勤']
+    if user.employment_type == 'PT':
+        allowed_types = ['出勤', '外出', '戻り', '退勤']
+
+    if action_type not in allowed_types:
+        return jsonify({'status': 'error', 'message': '選択された打刻種別は報告できません。'}), 400
+
+    try:
+        date_obj = datetime.strptime(report_date, '%Y-%m-%d').date()
+        time_obj = datetime.strptime(report_time, '%H:%M').time()
+    except ValueError:
+        return jsonify({'status': 'error', 'message': '日時の形式が正しくありません。'}), 400
+
+    report = MissPunchReport(
+        user_id=user.id,
+        report_date=date_obj,
+        report_time=time_obj,
+        action_type=action_type
+    )
+
+    try:
+        db.session.add(report)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': '報告の保存に失敗しました。'}), 500
+
+    return jsonify({'status': 'success'})
+
 # 管理者IDとパスワードのチェック
 @app.route('/check_adm_id', methods=['POST'])
 def check_adm_id():
@@ -835,7 +798,7 @@ def download_csv(year, month):
     wb = Workbook()
     ws = wb.active
     ws.title = f"{year}年{month}月 月次集計表"
-    
+
     # スタイルの設定
     header_font = Font(bold=True)
     center_alignment = Alignment(horizontal='center', vertical='center')
@@ -845,69 +808,105 @@ def download_csv(year, month):
         top=Side(style='thin'),
         bottom=Side(style='thin')
     )
-    
-    # ヘッダー行
-    headers = ['従業員番号', '従業員名', '年', '月', '日', '曜日', '出勤時間', '退勤時間']
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=header)
+    # ヘッダー背景色（薄いグレー）
+    header_fill = PatternFill(start_color='D9D9D9', end_color='D9D9D9', fill_type='solid')
+
+    # 2行ヘッダーの作成
+    # 1行目: 5列目以降に「従業員番号」「従業員名」を横に並べる
+    for col in range(1, 5):
+        cell = ws.cell(row=1, column=col, value='')
         cell.font = header_font
         cell.alignment = center_alignment
         cell.border = thin_border
-    
-    # データ行
-    row_num = 2
+
+    col_index = 5
     for employee in employees:
-        current_date = start_date
-        first_row = True
-        
-        while current_date <= end_date:
-            date_str = current_date.strftime('%Y-%m-%d')
+        cell_id = ws.cell(row=1, column=col_index, value=employee.employee_id)
+        cell_id.font = header_font
+        cell_id.alignment = center_alignment
+        cell_id.border = thin_border
+        cell_id.fill = header_fill
+
+        cell_name = ws.cell(row=1, column=col_index + 1, value=employee.name)
+        cell_name.font = header_font
+        cell_name.alignment = center_alignment
+        cell_name.border = thin_border
+        cell_name.fill = header_fill
+
+        col_index += 2
+
+    # 2行目: 1〜4列目に年・月・日・曜日、5列目以降に各従業員の「出勤時間」「退勤時間」
+    second_headers = ['年', '月', '日', '曜日']
+    for col, header in enumerate(second_headers, 1):
+        cell = ws.cell(row=2, column=col, value=header)
+        cell.font = header_font
+        cell.alignment = center_alignment
+        cell.border = thin_border
+        cell.fill = header_fill
+
+    col_index = 5
+    for _employee in employees:
+        cell_arrive = ws.cell(row=2, column=col_index, value='出勤時間')
+        cell_arrive.font = header_font
+        cell_arrive.alignment = center_alignment
+        cell_arrive.border = thin_border
+        cell_arrive.fill = header_fill
+
+        cell_leave = ws.cell(row=2, column=col_index + 1, value='退勤時間')
+        cell_leave.font = header_font
+        cell_leave.alignment = center_alignment
+        cell_leave.border = thin_border
+        cell_leave.fill = header_fill
+
+        col_index += 2
+
+    # データ行: 各日付ごとに横に全従業員の時間を並べる
+    row_num = 3
+    current_date = start_date
+    while current_date <= end_date:
+        # 左側の日付情報
+        ws.cell(row=row_num, column=1, value=current_date.year)
+        ws.cell(row=row_num, column=2, value=current_date.month)
+        ws.cell(row=row_num, column=3, value=current_date.day)
+        ws.cell(row=row_num, column=4, value=['月', '火', '水', '木', '金', '土', '日'][current_date.weekday()])
+
+        # 各従業員の出退勤
+        col_index = 5
+        date_str = current_date.strftime('%Y-%m-%d')
+        for employee in employees:
             records = AttendanceRecord.query.filter_by(
                 user_id=employee.id,
                 date=date_str
             ).order_by(AttendanceRecord.time).all()
-            
-            # 勤怠情報の取得
+
             arrive = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '出勤'), '')
             leave = next((r.time.strftime('%-H:%M') for r in records if r.action_type == '退勤'), '')
-            
-            # Excel行の追加
-            if first_row:
-                ws.cell(row=row_num, column=1, value=employee.employee_id)
-                ws.cell(row=row_num, column=2, value=employee.name)
-                first_row = False
-            else:
-                ws.cell(row=row_num, column=1, value='')
-                ws.cell(row=row_num, column=2, value='')
-            
-            ws.cell(row=row_num, column=3, value=current_date.year)
-            ws.cell(row=row_num, column=4, value=current_date.month)
-            ws.cell(row=row_num, column=5, value=current_date.day)
-            ws.cell(row=row_num, column=6, value=['月', '火', '水', '木', '金', '土', '日'][current_date.weekday()])
-            ws.cell(row=row_num, column=7, value=arrive)
-            ws.cell(row=row_num, column=8, value=leave)
-            
-            # セルのスタイル設定
-            for col in range(1, 9):
-                cell = ws.cell(row=row_num, column=col)
-                cell.alignment = center_alignment
-                cell.border = thin_border
-            
-            row_num += 1
-            current_date += timedelta(days=1)
-        
-        # 従業員ごとに1行の空白を追加
+
+            ws.cell(row=row_num, column=col_index, value=arrive)
+            ws.cell(row=row_num, column=col_index + 1, value=leave)
+
+            col_index += 2
+
+        # スタイル適用
+        max_col = col_index - 1
+        for col in range(1, max_col + 1):
+            cell = ws.cell(row=row_num, column=col)
+            cell.alignment = center_alignment
+            cell.border = thin_border
+
         row_num += 1
-    
+        current_date += timedelta(days=1)
+
     # 列幅の調整
-    ws.column_dimensions['A'].width = 15  # 従業員番号
-    ws.column_dimensions['B'].width = 20  # 従業員名
-    ws.column_dimensions['C'].width = 10  # 年度
-    ws.column_dimensions['D'].width = 10  # 月
-    ws.column_dimensions['E'].width = 10  # 日
-    ws.column_dimensions['F'].width = 10  # 曜日
-    ws.column_dimensions['G'].width = 15  # 出勤時間
-    ws.column_dimensions['H'].width = 15  # 退勤時間
+    from openpyxl.utils import get_column_letter
+    ws.column_dimensions['A'].width = 10  # 年
+    ws.column_dimensions['B'].width = 10   # 月
+    ws.column_dimensions['C'].width = 10   # 日
+    ws.column_dimensions['D'].width = 10  # 曜日
+
+    total_cols = 4 + len(employees) * 2
+    for col in range(5, total_cols + 1):
+        ws.column_dimensions[get_column_letter(col)].width = 20  # 出勤/退勤列
     
     # Excelファイルをレスポンスとして返す
     output = BytesIO()
@@ -920,6 +919,24 @@ def download_csv(year, month):
         download_name=f'月次集計表_{year}年{month}月.xlsx',
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
+
+@app.route('/update_password/<int:user_id>', methods=['POST'])
+def update_password(user_id):
+    user = User.query.get_or_404(user_id)
+    new_password = request.form.get('new_password')
+
+    if not new_password:
+        flash('新しいパスワードを入力してください。', 'danger')
+        return redirect(url_for('management_account'))
+
+    user.password = generate_password_hash(new_password)
+    try:
+        db.session.commit()
+        flash('パスワードが正常に変更されました。', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'パスワード変更中にエラーが発生しました: {e}', 'danger')
+    return redirect(url_for('management_account'))
 
 if __name__ == '__main__':
     # 開発環境の場合はデバッグモードを有効化

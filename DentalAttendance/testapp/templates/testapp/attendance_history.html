@@ -23,9 +23,12 @@
                 <a href="{{ url_for('next_month', year=year, month=month) }}" class="btn btn-primary">
                     次月 <i class="fas fa-chevron-right"></i>
                 </a>
-                <button onclick="downloadPdf()" class="btn btn-success">
-                    <i class="fas fa-file-pdf"></i> PDFダウンロード
+                <button onclick="downloadPdf()" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> PDF
                 </button>
+                <a href="{{ url_for('download_csv', year=year, month=month) }}" class="btn btn-success">
+                    <i class="fas fa-file-csv"></i> CSV
+                </a>
             </div>
         </div>
 

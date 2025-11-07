@@ -43,9 +43,8 @@
                             <td class="text-center">{{ user.employment_type }}</td>
                             <td class="text-center">{{ user.employee_id }}</td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-danger" onclick="showDeleteConfirmation('{{ user.id }}', '{{ user.name }}', '{{ user.employment_type }}', '{{ user.employee_id }}')">
-                                    <i class="fas fa-trash"></i> 削除
-                                </button>
+                                <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#passwordChangeModal" onclick="openPasswordChangeModal('{{ user.id }}', '{{ user.name }}')"><i class="fa-solid fa-key"></i> 変更</button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="showDeleteConfirmation('{{ user.id }}', '{{ user.name }}', '{{ user.employment_type }}', '{{ user.employee_id }}')"><i class="fas fa-trash"></i> 削除</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -54,12 +53,52 @@
             </div>
         </div>
 
+        <!-- パスワード変更モーダル -->
+        <div class="modal fade" id="passwordChangeModal" tabindex="-1" aria-labelledby="passwordChangeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="passwordChangeModalLabel">パスワード変更</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="passwordChangeForm" method="POST"> <!-- actionはJSで設定 -->
+                        <div class="modal-body">
+                            <p>アカウント名：<span id="changePasswordUserName"></span></p>
+                            <input type="hidden" name="user_id" id="changePasswordUserId">
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">新しいパスワード</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="newPassword" name="new_password" required placeholder="パスワードを入力">
+                                    <button type="button" class="password-toggle-btn" id="toggleNewPassword">
+                                        <i class="fa-solid fa-eye-slash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">新しいパスワード（確認）</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required placeholder="パスワードを再入力">
+                                    <button type="button" class="password-toggle-btn" id="toggleConfirmPassword">
+                                        <i class="fa-solid fa-eye-slash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="passwordError" class="text-danger" style="display: none;"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">パスワード更新</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- 削除確認モーダル -->
         <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="deleteConfirmationModalLabel">アカウント削除確認</h5>
+                        <h5 class="modal-title" id="deleteConfirmationModalLabel">アカウント削除</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -71,7 +110,6 @@
                     <div class="modal-footer">
                         <form id="deleteForm" method="POST" style="display: inline;">
                             <button type="submit" class="btn btn-danger">削除</button>
-                        </form>
                     </div>
                 </div>
             </div>
