@@ -33,7 +33,7 @@
                     <!-- ここに記録が表示されます -->
                 </ul>
                 <div class="navigation-footer">
-                    <button type="button" class="miss-report-button">打刻ミス報告</button>
+                    <button type="button" class="correction-request-button">修正依頼</button>
                 </div>
             </div>
         </header>
@@ -93,31 +93,31 @@
             </div>
         </div>
 
-        <!-- 打刻ミス報告モーダル -->
-        <div id="missReportModal" class="miss-report-modal">
-            <div class="miss-report-content">
-                <button type="button" class="miss-report-close" id="missReportClose">
+        <!-- 修正依頼モーダル -->
+        <div id="correctionRequestModal" class="correction-request-modal">
+            <div class="correction-request-content">
+                <button type="button" class="correction-request-close" id="correctionRequestClose">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
-                <h2 class="miss-report-title">打刻ミス報告</h2>
-                <div class="miss-report-separator"></div>
-                <p class="miss-report-date" id="missReportDisplayDate"></p>
-                <form id="missReportForm">
-                    <div class="miss-report-field">
-                        <label for="missReportType" class="miss-report-label">打刻種別</label>
-                        <div class="miss-report-input-wrapper">
-                            <select id="missReportType" name="action_type" class="miss-report-select" required>
+                <h2 class="correction-request-title">修正依頼</h2>
+                <div class="correction-request-separator"></div>
+                <p class="correction-request-date" id="correctionRequestDisplayDate"></p>
+                <form id="correctionRequestForm">
+                    <div class="correction-request-field">
+                        <label for="correctionRequestType" class="correction-request-label">打刻種別</label>
+                        <div class="correction-request-input-wrapper">
+                            <select id="correctionRequestType" name="action_type" class="correction-request-select" required>
                                 <option value="" disabled selected>打刻種別を選択してください</option>
                                 <option value="出勤">出勤</option>
                                 <option value="退勤">退勤</option>
                             </select>
-                            <i class="fa-solid fa-chevron-down miss-report-select-icon"></i>
+                            <i class="fa-solid fa-chevron-down correction-request-select-icon"></i>
                         </div>
                     </div>
-                    <div class="miss-report-field">
-                        <label for="missReportReason" class="miss-report-label">理由</label>
-                        <div class="miss-report-input-wrapper">
-                            <select id="missReportReason" name="reason" class="miss-report-select" required>
+                    <div class="correction-request-field">
+                        <label for="correctionRequestReason" class="correction-request-label">理由</label>
+                        <div class="correction-request-input-wrapper">
+                            <select id="correctionRequestReason" name="reason" class="correction-request-select" required>
                                 <option value="" disabled selected>理由を選択してください</option>
                                 <option value="打刻忘れ">打刻忘れ</option>
                                 <option value="誤打刻">誤打刻</option>
@@ -126,21 +126,21 @@
                                 <option value="個人的事情">個人的事情</option>
                                 <option value="その他">その他</option>
                             </select>
-                            <i class="fa-solid fa-chevron-down miss-report-select-icon"></i>
+                            <i class="fa-solid fa-chevron-down correction-request-select-icon"></i>
                         </div>
                     </div>
-                    <div class="miss-report-field">
-                        <label for="missReportTime" class="miss-report-label">時間</label>
-                        <div class="miss-report-time-picker" id="missReportTimePicker">
+                    <div class="correction-request-field">
+                        <label for="correctionRequestTime" class="correction-request-label">時間</label>
+                        <div class="correction-request-time-picker" id="correctionRequestTimePicker">
                             <div class="time-wheel" data-type="hour"></div>
                             <span class="time-wheel-separator">:</span>
                             <div class="time-wheel" data-type="minute"></div>
                         </div>
-                        <input type="hidden" id="missReportTime" name="report_time" value="00:00" required>
+                        <input type="hidden" id="correctionRequestTime" name="report_time" value="00:00" required>
                     </div>
-                    <input type="hidden" id="missReportDateInput" name="report_date">
-                    <p class="miss-report-feedback" id="missReportFeedback"></p>
-                    <button type="submit" class="miss-report-submit">報告</button>
+                    <input type="hidden" id="correctionRequestDateInput" name="report_date">
+                    <p class="correction-request-feedback" id="correctionRequestFeedback"></p>
+                    <button type="submit" class="correction-request-submit">報告</button>
                 </form>
             </div>
         </div>

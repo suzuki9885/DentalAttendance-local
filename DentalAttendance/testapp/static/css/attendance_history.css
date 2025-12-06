@@ -26,7 +26,7 @@
     transition: all 0.3s ease;
     position: fixed;
     left: 20px;
-    top: 20px;
+    top: 32px;
 }
 
 .back-button:hover {
@@ -48,8 +48,297 @@ h1 {
 .controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 16px;
     flex-wrap: wrap;
+}
+
+.month-navigation {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    background-color: #48b1e9;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(72, 177, 233, 0.2);
+    color: #fff;
+    min-width: 260px;
+}
+
+.month-navigation .month-display {
+    flex: 1;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.03em;
+}
+
+.month-navigation .month-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.month-navigation .month-button:hover,
+.month-navigation .month-button:focus-visible {
+    background-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.month-navigation .month-button i {
+    font-size: 1.1rem;
+}
+
+.notification-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin-right: 12px;
+    color: #000;
+    cursor: pointer;
+    width: 42px;
+    height: 42px;
+}
+
+.notification-button i {
+    font-size: 1.8rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.notification-button:hover i {
+    transform: scale(1.1);
+    color: #555;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -2px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    background-color: #ff4848;
+    color: #fff;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(255, 72, 72, 0.4);
+}
+
+.notification-badge[hidden] {
+    display: none;
+}
+
+.notification-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 2000;
+}
+
+.notification-modal.active {
+    display: flex;
+}
+
+.notification-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    width: min(520px, 90vw);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 18px 40px rgba(15, 33, 55, 0.25);
+    overflow: hidden;
+}
+
+.notification-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid #ecf2f8;
+}
+
+.notification-modal-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    color: #263238;
+}
+
+.notification-modal-close {
+    border: none;
+    background: transparent;
+    color: #607d8b;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.notification-modal-close:hover,
+.notification-modal-close:focus-visible {
+    background-color: rgba(96, 125, 139, 0.15);
+    transform: rotate(90deg);
+}
+
+.notification-modal-body {
+    padding: 12px 0;
+    overflow-y: auto;
+}
+
+.notification-empty {
+    margin: 20px;
+    padding: 16px;
+    background-color: #f5f9fc;
+    border-radius: 12px;
+    color: #455a64;
+    text-align: center;
+    font-weight: 500;
+}
+
+.notification-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.notification-item {
+    padding: 16px 24px;
+    border-bottom: 1px solid #ecf2f8;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.notification-item.unread {
+    background-color: #f4fbff;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.notification-user {
+    font-weight: 700;
+    color: #263238;
+}
+
+.notification-reason-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.notification-details {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #37474f;
+}
+
+.notification-action {
+    font-weight: 600;
+    color: #48b1e9;
+}
+
+.notification-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.notification-apply-button {
+    background-color: #48b1e9;
+    color: #fff;
+    border: none;
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.notification-apply-button:hover:not(:disabled),
+.notification-apply-button:focus-visible:not(:disabled) {
+    background-color: #349dd5;
+    transform: translateY(-1px);
+}
+
+.notification-apply-button:disabled {
+    background-color: #b0bec5;
+    cursor: not-allowed;
+}
+
+.notification-item.applied {
+    background-color: #eceff1;
+    opacity: 0.7;
+}
+
+.notification-item.applied .notification-reason-badge {
+    background-color: #cfd8dc;
+    color: #546e7a;
+}
+
+.notification-item.applied .notification-action {
+    color: #607d8b;
+}
+
+.btn-success {
+    background-color: #57ac5e;
+    border-color: #57ac5e;  
+    color: #fff;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.show > .btn-success.dropdown-toggle {
+    background-color: #567e33;
+    border-color: #567e33;
+    color: #fff;
 }
 
 .month-display {
@@ -62,6 +351,13 @@ h1 {
 .table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+.table-responsive {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .table th, .table td {
@@ -135,6 +431,24 @@ h1 {
     .controls {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .month-navigation {
+        flex: 1;
+        justify-content: space-between;
+        min-width: auto;
+        width: 100%;
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .notification-modal {
+        padding: 16px;
+    }
+
+    .notification-modal-content {
+        width: 100%;
+        max-height: 85vh;
     }
 } 
 

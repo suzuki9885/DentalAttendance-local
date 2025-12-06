@@ -530,10 +530,18 @@ def delete_account(user_id):
 # 勤怠登録画面のボタンの状態確認
 def check_button_state(user_id, action_type):
     today = datetime.now().date()
+    action_order = case(
+        (AttendanceRecord.action_type == '出勤', 1),
+        (AttendanceRecord.action_type == '外出', 2),
+        (AttendanceRecord.action_type == '戻り', 3),
+        (AttendanceRecord.action_type == '退勤', 4),
+        else_=99
+    )
+
     records = AttendanceRecord.query.filter(
         AttendanceRecord.user_id == user_id,
         AttendanceRecord.date == today
-    ).order_by(AttendanceRecord.time).all()
+    ).order_by(action_order, AttendanceRecord.time).all()
     
     # ケース1：記録なし
     if not records:
@@ -644,8 +652,9 @@ def miss_punch_report():
     action_type = request.form.get('action_type')
     report_time = request.form.get('report_time')
     report_date = request.form.get('report_date')
+    reason = request.form.get('reason')
 
-    if not all([action_type, report_time, report_date]):
+    if not all([action_type, report_time, report_date, reason]):
         return jsonify({'status': 'error', 'message': '必要な情報が不足しています。'}), 400
 
     allowed_types = ['出勤', '退勤']
@@ -665,7 +674,8 @@ def miss_punch_report():
         user_id=user.id,
         report_date=date_obj,
         report_time=time_obj,
-        action_type=action_type
+        action_type=action_type,
+        reason=reason
     )
 
     try:
@@ -674,6 +684,102 @@ def miss_punch_report():
     except Exception:
         db.session.rollback()
         return jsonify({'status': 'error', 'message': '報告の保存に失敗しました。'}), 500
+
+    return jsonify({'status': 'success'})
+
+
+@app.route('/miss_punch_notifications', methods=['GET'])
+def miss_punch_notifications():
+    if 'adm_logged_in' not in session:
+        return jsonify({'message': '認証が必要です。'}), 401
+
+    reports = (MissPunchReport.query
+               .order_by(MissPunchReport.created_at.desc())
+               .limit(100)
+               .all())
+    unread_count = MissPunchReport.query.filter_by(is_read=False).count()
+    unapplied_count = MissPunchReport.query.filter_by(is_applied=False).count()
+
+    data = []
+    for report in reports:
+        user = report.user
+        data.append({
+            'id': report.id,
+            'employee_id': user.employee_id if user else None,
+            'employee_name': user.name if user else None,
+            'action_type': report.action_type,
+            'report_date': report.report_date.strftime('%Y-%m-%d') if report.report_date else None,
+            'report_time': report.report_time.strftime('%H:%M') if report.report_time else None,
+            'reason': report.reason or '',
+            'created_at': report.created_at.strftime('%Y-%m-%d %H:%M'),
+            'is_read': report.is_read,
+            'is_applied': report.is_applied,
+        })
+
+    return jsonify({'reports': data, 'unread_count': unread_count, 'unapplied_count': unapplied_count})
+
+
+@app.route('/miss_punch_notifications/mark_read', methods=['POST'])
+def mark_miss_punch_notifications_read():
+    if 'adm_logged_in' not in session:
+        return jsonify({'message': '認証が必要です。'}), 401
+
+    payload = request.get_json(silent=True) or {}
+    ids = payload.get('ids')
+
+    query = MissPunchReport.query.filter_by(is_read=False)
+    if ids:
+        query = query.filter(MissPunchReport.id.in_(ids))
+
+    try:
+        updated = query.update({'is_read': True}, synchronize_session=False)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': '通知の更新に失敗しました。'}), 500
+
+    return jsonify({'status': 'success', 'updated': updated})
+
+
+@app.route('/miss_punch_notifications/apply/<int:report_id>', methods=['POST'])
+def apply_miss_punch_notification(report_id):
+    if 'adm_logged_in' not in session:
+        return jsonify({'message': '認証が必要です。'}), 401
+
+    report = MissPunchReport.query.get_or_404(report_id)
+
+    if report.is_applied:
+        return jsonify({'status': 'already_applied'})
+
+    try:
+        record = AttendanceRecord.query.filter_by(
+            user_id=report.user_id,
+            date=report.report_date,
+            action_type=report.action_type
+        ).first()
+
+        weekday = report.report_date.weekday()
+
+        if record:
+            record.time = report.report_time
+            record.day_of_week = weekday
+        else:
+            record = AttendanceRecord(
+                user_id=report.user_id,
+                action_type=report.action_type,
+                date=report.report_date,
+                time=report.report_time,
+                day_of_week=weekday
+            )
+            db.session.add(record)
+
+        report.is_applied = True
+        report.is_read = True
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': '勤怠履歴の更新に失敗しました。'}), 500
 
     return jsonify({'status': 'success'})
 

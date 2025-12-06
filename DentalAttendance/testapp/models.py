@@ -34,6 +34,9 @@ class MissPunchReport(db.Model):
     report_time = db.Column(db.Time, nullable=False)
     action_type = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    reason = db.Column(db.String(255))
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    is_applied = db.Column(db.Boolean, default=False, nullable=False)
 
     user = db.relationship('User', backref=db.backref('miss_punch_reports', lazy=True))
 

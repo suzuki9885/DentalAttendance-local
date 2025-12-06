@@ -16,13 +16,19 @@
             </a>
             <h1>勤怠履歴</h1>
             <div class="controls">
-                <a href="{{ url_for('prev_month', year=year, month=month) }}" class="btn btn-primary">
-                    <i class="fas fa-chevron-left"></i> 前月
-                </a>
-                <span id="currentMonth" class="month-display">{{ year }}年{{ month }}月</span>
-                <a href="{{ url_for('next_month', year=year, month=month) }}" class="btn btn-primary">
-                    次月 <i class="fas fa-chevron-right"></i>
-                </a>
+                <button type="button" class="notification-button" id="notificationButton" aria-label="打刻ミス報告の通知">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" aria-live="polite" hidden></span>
+                </button>
+                <div class="month-navigation">
+                    <a href="{{ url_for('prev_month', year=year, month=month) }}" class="month-button prev-month" aria-label="前月">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <span id="currentMonth" class="month-display">{{ year }}年{{ month }}月</span>
+                    <a href="{{ url_for('next_month', year=year, month=month) }}" class="month-button next-month" aria-label="次月">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
                 <button onclick="downloadPdf()" class="btn btn-danger">
                     <i class="fas fa-file-pdf"></i> PDF
                 </button>
@@ -78,6 +84,21 @@
         </div>
     </div>
 
+    <div id="notificationModal" class="notification-modal" role="dialog" aria-modal="true" aria-labelledby="notificationModalTitle">
+        <div class="notification-modal-content">
+            <div class="notification-modal-header">
+                <h2 id="notificationModalTitle">修正依頼</h2>
+                <button type="button" class="notification-modal-close" id="notificationClose" aria-label="閉じる">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="notification-modal-body">
+                <p class="notification-empty" id="notificationEmpty" hidden>新しい報告はありません。</p>
+                <ul class="notification-list" id="notificationList"></ul>
+            </div>
+        </div>
+    </div>
+
     <script>
         function downloadPdf() {
             const currentMonth = document.getElementById('currentMonth').textContent;
@@ -85,5 +106,6 @@
             window.location.href = `/download_pdf/${year}/${month}`;
         }
     </script>
+    <script src="{{ url_for('static', filename='javascript/attendance_notifications.js') }}" defer></script>
 </body>
 </html>

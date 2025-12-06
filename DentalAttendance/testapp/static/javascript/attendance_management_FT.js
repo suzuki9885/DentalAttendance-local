@@ -143,29 +143,29 @@ function fetchRecords() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const missReportButton = document.querySelector('.miss-report-button');
-    const missReportModal = document.getElementById('missReportModal');
-    if (!missReportButton || !missReportModal) {
+    const correctionRequestButton = document.querySelector('.correction-request-button');
+    const correctionRequestModal = document.getElementById('correctionRequestModal');
+    if (!correctionRequestButton || !correctionRequestModal) {
         return;
     }
 
-    const missReportClose = document.getElementById('missReportClose');
-    const missReportForm = document.getElementById('missReportForm');
-    const missReportFeedback = document.getElementById('missReportFeedback');
-    const missReportDateDisplay = document.getElementById('missReportDisplayDate');
-    const missReportDateInput = document.getElementById('missReportDateInput');
-    const missReportTime = document.getElementById('missReportTime');
-    const missReportType = document.getElementById('missReportType');
-    const missReportReason = document.getElementById('missReportReason');
-    if (missReportReason) {
-        missReportReason.addEventListener('change', () => {
-            const selected = missReportReason.options[missReportReason.selectedIndex];
+    const correctionRequestClose = document.getElementById('correctionRequestClose');
+    const correctionRequestForm = document.getElementById('correctionRequestForm');
+    const correctionRequestFeedback = document.getElementById('correctionRequestFeedback');
+    const correctionRequestDateDisplay = document.getElementById('correctionRequestDisplayDate');
+    const correctionRequestDateInput = document.getElementById('correctionRequestDateInput');
+    const correctionRequestTime = document.getElementById('correctionRequestTime');
+    const correctionRequestType = document.getElementById('correctionRequestType');
+    const correctionRequestReason = document.getElementById('correctionRequestReason');
+    if (correctionRequestReason) {
+        correctionRequestReason.addEventListener('change', () => {
+            const selected = correctionRequestReason.options[correctionRequestReason.selectedIndex];
             if (selected && selected.value) {
                 selected.textContent = selected.value;
             }
         });
     }
-    const timePickerContainer = document.getElementById('missReportTimePicker');
+    const timePickerContainer = document.getElementById('correctionRequestTimePicker');
     const hourWheel = timePickerContainer ? timePickerContainer.querySelector('.time-wheel[data-type="hour"]') : null;
     const minuteWheel = timePickerContainer ? timePickerContainer.querySelector('.time-wheel[data-type="minute"]') : null;
     const weekLabels = ['日', '月', '火', '水', '木', '金', '土'];
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const hour = hourWheel.dataset.value || '00';
         const minute = minuteWheel.dataset.value || '00';
-        missReportTime.value = `${hour}:${minute}`;
+        correctionRequestTime.value = `${hour}:${minute}`;
     };
 
     const setWheelSelection = (wheel, index) => {
@@ -278,52 +278,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const updateModalDateTime = () => {
         const now = new Date();
-        missReportDateDisplay.textContent = `日時：${now.getFullYear()}年${pad(now.getMonth() + 1)}月${pad(now.getDate())}日(${weekLabels[now.getDay()]})`;
-        missReportDateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+        correctionRequestDateDisplay.textContent = `日時：${now.getFullYear()}年${pad(now.getMonth() + 1)}月${pad(now.getDate())}日(${weekLabels[now.getDay()]})`;
+        correctionRequestDateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
         initializeTimePicker();
         setWheelPosition('00', '00', false);
         updateHiddenTimeValue();
     };
 
     const resetFeedback = () => {
-        missReportFeedback.textContent = '';
-        missReportFeedback.classList.remove('error', 'success');
+        correctionRequestFeedback.textContent = '';
+        correctionRequestFeedback.classList.remove('error', 'success');
     };
 
-    const openMissReportModal = () => {
-        missReportForm.reset();
+    const openCorrectionRequestModal = () => {
+        correctionRequestForm.reset();
         resetFeedback();
         updateModalDateTime();
-        missReportModal.classList.add('active');
+        correctionRequestModal.classList.add('active');
     };
 
-    const closeMissReportModal = () => {
-        missReportModal.classList.remove('active');
-        missReportForm.reset();
+    const closeCorrectionRequestModal = () => {
+        correctionRequestModal.classList.remove('active');
+        correctionRequestForm.reset();
         setWheelPosition('00', '00', false);
         updateHiddenTimeValue();
     };
 
-    missReportButton.addEventListener('click', openMissReportModal);
-    missReportClose.addEventListener('click', closeMissReportModal);
-    missReportForm.addEventListener('submit', function(event) {
+    correctionRequestButton.addEventListener('click', openCorrectionRequestModal);
+    correctionRequestClose.addEventListener('click', closeCorrectionRequestModal);
+    correctionRequestForm.addEventListener('submit', function(event) {
         event.preventDefault();
         resetFeedback();
 
-        if (!missReportType.value) {
-            missReportFeedback.textContent = '打刻種別を選択してください。';
-            missReportFeedback.classList.add('error');
+        if (!correctionRequestType.value) {
+            correctionRequestFeedback.textContent = '打刻種別を選択してください。';
+            correctionRequestFeedback.classList.add('error');
             return;
         }
 
-        if (!missReportReason.value) {
-            missReportFeedback.textContent = '理由を選択してください。';
-            missReportFeedback.classList.add('error');
+        if (!correctionRequestReason.value) {
+            correctionRequestFeedback.textContent = '理由を選択してください。';
+            correctionRequestFeedback.classList.add('error');
             return;
         }
 
-        const formData = new FormData(missReportForm);
-        missReportFeedback.textContent = '送信中...';
+        const formData = new FormData(correctionRequestForm);
+        correctionRequestFeedback.textContent = '送信中...';
 
         fetch('/miss_punch_report', {
             method: 'POST',
@@ -332,19 +332,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    missReportFeedback.textContent = '報告が送信されました。';
-                    missReportFeedback.classList.add('success');
+                    correctionRequestFeedback.textContent = '報告が送信されました。';
+                    correctionRequestFeedback.classList.add('success');
                     setTimeout(() => {
-                        closeMissReportModal();
+                        closeCorrectionRequestModal();
                     }, 1200);
                 } else {
-                    missReportFeedback.textContent = data.message || '報告に失敗しました。';
-                    missReportFeedback.classList.add('error');
+                    correctionRequestFeedback.textContent = data.message || '報告に失敗しました。';
+                    correctionRequestFeedback.classList.add('error');
                 }
             })
             .catch(() => {
-                missReportFeedback.textContent = '通信エラーが発生しました。';
-                missReportFeedback.classList.add('error');
+                correctionRequestFeedback.textContent = '通信エラーが発生しました。';
+                correctionRequestFeedback.classList.add('error');
             });
     });
 
